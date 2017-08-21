@@ -90,7 +90,7 @@ func init() {
 }
 
 func version_handle(arg interface{}) {
-	if err, version := govs.Get_version(); err != nil {
+	if version, err := govs.Get_version(); err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(version)
@@ -98,7 +98,7 @@ func version_handle(arg interface{}) {
 }
 
 func info_handle(arg interface{}) {
-	if err, info := govs.Get_version(); err != nil {
+	if info, err := govs.Get_version(); err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println(info)
