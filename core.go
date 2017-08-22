@@ -55,8 +55,9 @@ const (
 )
 
 var (
-	client *rpc.Client
-	CmdOpt CmdOptions
+	client   *rpc.Client
+	CmdOpt   CmdOptions
+	FirstCmd FirstCommand
 )
 
 type CallOptions struct {
@@ -99,6 +100,25 @@ type CmdOptions struct {
 	Tcp_timeout     int
 	Tcp_fin_timeout int
 	Udp_timeout     int
+}
+
+type FirstCommand struct {
+	ADD      bool
+	EDIT     bool
+	DEL      bool
+	ADDDEST  bool
+	EDITDEST bool
+	DELDEST  bool
+	FLUSH    bool
+	LIST     bool
+	ZERO     bool
+	USAGE    bool
+	VERSION  bool
+	ADDLADDR bool
+	DELLADDR bool
+	GETLADDR bool
+	TIMEOUT  bool
+	STATUS   bool
 }
 
 type Be32 uint32

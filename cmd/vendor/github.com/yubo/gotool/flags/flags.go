@@ -7,10 +7,10 @@ package flags
 
 import (
 	"flag"
-	"fmt"
 	"os"
 )
 
+/*
 type flag_t struct {
 	Name   string
 	usage  string
@@ -28,7 +28,20 @@ type flags_t struct {
 }
 
 var CommandLine flags_t
+*/
 
+type my_flag struct {
+	Action func(args interface{})
+}
+
+var Cmd = my_flag{
+	Action: nil,
+}
+
+var FirstCmd = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+var OthersCmd = flag.NewFlagSet("", flag.ExitOnError)
+
+/*
 func NewCommand(name, usage string, action func(args interface{}),
 	errorHandling flag.ErrorHandling) *flag.FlagSet {
 
@@ -44,11 +57,15 @@ func NewCommand(name, usage string, action func(args interface{}),
 	f.Flag.BoolVar(&f.h, "h", false, "Print usage")
 	return f.Flag
 }
+*/
 
+/*
 func Parse() {
-	CommandLine.Parse(os.Args[1:])
+	Cmd.Parse(os.Args[1:])
 }
+*/
 
+/*
 func (f *flags_t) Parse(args []string) (err error) {
 	for i, arg := range args {
 		for _, f := range CommandLine.flags {
@@ -74,7 +91,8 @@ func (f *flags_t) Parse(args []string) (err error) {
 	}
 	return
 }
-
+*/
+/*
 func (f *flag_t) Usage() {
 	fmt.Fprintf(os.Stderr,
 		"Usage: %s [OPTIONS] %s [ARG...]\n", os.Args[0], f.Name)
@@ -107,3 +125,4 @@ func init() {
 	flag.Usage = Usage
 	flag.BoolVar(&CommandLine.h, "h", false, "Print usage")
 }
+*/
