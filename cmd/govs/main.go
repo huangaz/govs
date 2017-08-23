@@ -22,7 +22,6 @@ var (
 )
 
 func main() {
-
 	//	flags.Parse()
 	handler()
 
@@ -49,8 +48,8 @@ func main() {
 		cmd.Action(&govs.CallOptions{Opt: govs.CmdOpt,
 			Args: flags.OthersCmd.Args()})
 	} else {
-		//	flags.Usage()
-		fmt.Println("error")
+		//flags.Usage()
+		//	fmt.Println("error")
 	}
 	/*
 		switch {

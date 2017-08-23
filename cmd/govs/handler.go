@@ -19,34 +19,34 @@ func init() {
 	//flags.CommandLine.Usage = fmt.Sprintf("Usage: %s COMMAND [OPTIONS] host[:port]\n\n",
 	//	os.Args[0])
 
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADD, "A", false, "add")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.EDIT, "E", false, "edit Service")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.DEL, "D", false, "del Service")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADDDEST, "a", false, "add Real Server")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.EDITDEST, "e", false, "edit Real Server")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.DELDEST, "d", false, "del Real Server")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.FLUSH, "C", false, "flush")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.LIST, "L", false, "list Service")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.LIST, "l", false, "list Service")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.ZERO, "Z", false, "zero")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.TIMEOUT, "TAG_SET", false, "timeout")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.USAGE, "h", false, "show usage")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.VERSION, "V", false, "show version")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADDLADDR, "P", false, "add Local Address")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.DELLADDR, "Q", false, "del Local Address")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.GETLADDR, "G", false, "get Local Address")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.STATUS, "S", false, "show status")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADD, "A", false, "add virtual service with options")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.EDIT, "E", false, "edit virtual service with options")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.DEL, "D", false, "delete virtual service")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADDDEST, "a", false, "add real server with options")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.EDITDEST, "e", false, "edit real server with options")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.DELDEST, "d", false, "delete real server")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.FLUSH, "C", false, "clear the whole table")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.LIST, "L", false, "list the table")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.LIST, "l", false, "list the table")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.ZERO, "Z", false, "zero counters in a service or all services")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.TIMEOUT, "TAG_SET", false, "set connection timeout values")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.USAGE, "h", false, "display this help message")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.VERSION, "V", false, "get version")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADDLADDR, "P", false, "add local address")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.DELLADDR, "Q", false, "del local address")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.GETLADDR, "G", false, "get local address")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.STATUS, "s", false, "get dpvs status")
 
-	flags.OthersCmd.StringVar(&govs.CmdOpt.TCP, "t", "", "tcp service")
-	flags.OthersCmd.StringVar(&govs.CmdOpt.UDP, "u", "", "udp service")
+	flags.OthersCmd.StringVar(&govs.CmdOpt.TCP, "t", "", "service-address is host[:port]")
+	flags.OthersCmd.StringVar(&govs.CmdOpt.UDP, "u", "", "service-address is host[:port]")
 	flags.OthersCmd.Var(&govs.CmdOpt.Netmask, "M", "netmask deafult 0.0.0.0")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.Sched_name, "s", "rr", "scheduler name rr/wrr")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.Flags, "flags", 0, "the service flags")
-	flags.OthersCmd.Var(&govs.CmdOpt.Daddr, "r", "service-address is host[:port]")
+	flags.OthersCmd.Var(&govs.CmdOpt.Daddr, "r", "server-address is host (and port)")
 	flags.OthersCmd.IntVar(&govs.CmdOpt.Weight, "w", 0, "capacity of real server")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.U_threshold, "x", 0, "upper threshold of connections")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.L_threshold, "y", 0, "lower threshold of connections")
-	flags.OthersCmd.Var(&govs.CmdOpt.Lip, "z", "local-address is host")
+	flags.OthersCmd.Var(&govs.CmdOpt.Lip, "z", "local-address")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.Typ, "type", "io", "type of the stats name(io/w/we/dev/ctl/mem)")
 	flags.OthersCmd.IntVar(&govs.CmdOpt.Id, "i", -1, "id of the stats object")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.Timeout_s, "set", "", "set <tcp,tcp_fin,udp>")
@@ -57,54 +57,40 @@ func handler() {
 	flags.FirstCmd.Parse(os.Args[1:2])
 	switch {
 	case govs.FirstCmd.ADD:
-		fmt.Println("add Service")
 		flags.Cmd.Action = add_handle
 	case govs.FirstCmd.EDIT:
-		fmt.Println("edit Service")
 		flags.Cmd.Action = edit_handle
 	case govs.FirstCmd.DEL:
-		fmt.Println("del Service")
 		flags.Cmd.Action = del_handle
 	case govs.FirstCmd.ADDDEST:
-		fmt.Println("add Real Server")
-		flags.Cmd.Action = addsrv_handle
+		flags.Cmd.Action = add_handle
 	case govs.FirstCmd.EDITDEST:
-		fmt.Println("edit Real Server")
-		flags.Cmd.Action = editsrv_handle
+		flags.Cmd.Action = edit_handle
 	case govs.FirstCmd.DELDEST:
-		fmt.Println("del Real Server")
-		flags.Cmd.Action = delsrv_handle
+		flags.Cmd.Action = del_handle
 	case govs.FirstCmd.ADDLADDR:
-		fmt.Println("add Local Address")
-		flags.Cmd.Action = addladdr_handle
+		flags.Cmd.Action = add_handle
 	case govs.FirstCmd.DELLADDR:
-		fmt.Println("del Local Address")
-		flags.Cmd.Action = delladdr_handle
+		flags.Cmd.Action = del_handle
 	case govs.FirstCmd.GETLADDR:
-		fmt.Println("get Local Address")
 		flags.Cmd.Action = list_handle
 	case govs.FirstCmd.FLUSH:
-		fmt.Println("flush")
 		flags.Cmd.Action = flush_handle
 	case govs.FirstCmd.LIST:
-		fmt.Println("list")
 		flags.Cmd.Action = list_handle
 	case govs.FirstCmd.STATUS:
-		fmt.Println("status")
 		flags.Cmd.Action = stats_handle
 	case govs.FirstCmd.TIMEOUT:
-		fmt.Println("timeout")
 		flags.Cmd.Action = timeout_handle
-	case govs.FirstCmd.USAGE:
-		fmt.Println("show usage")
 	case govs.FirstCmd.VERSION:
-		fmt.Println("gei version")
 		flags.Cmd.Action = version_handle
 	case govs.FirstCmd.ZERO:
-		fmt.Println("zero")
 		flags.Cmd.Action = zero_handle
+	case govs.FirstCmd.USAGE:
+		Usage()
+		flags.Usage()
 	default:
-		fmt.Println("error!!!")
+		fmt.Println("error!!")
 	}
 	flags.OthersCmd.Parse(os.Args[2:])
 	//generic_opt_check
@@ -224,7 +210,7 @@ func list_svcs_handle(o *govs.CmdOptions) {
 			if err != nil || laddrs.Code != 0 ||
 				len(laddrs.Laddrs) == 0 {
 				//fmt.Println(err)
-				return
+				continue
 			}
 			fmt.Println(laddrs)
 		}
@@ -276,47 +262,14 @@ func add_handle(arg interface{}) {
 	}
 	o := &opt.Opt
 
-	reply, err = govs.Set_add(o)
-
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(reply)
+	switch {
+	case govs.FirstCmd.ADD:
+		reply, err = govs.Set_add(o)
+	case govs.FirstCmd.ADDDEST:
+		reply, err = govs.Set_adddest(o)
+	case govs.FirstCmd.ADDLADDR:
+		reply, err = govs.Set_addladdr(o)
 	}
-}
-
-func addsrv_handle(arg interface{}) {
-	var err error
-	var reply *govs.Vs_cmd_r
-
-	opt := arg.(*govs.CallOptions)
-	if err := govs.Parse_service(opt); err != nil {
-		fmt.Println(err)
-		return
-	}
-	o := &opt.Opt
-
-	reply, err = govs.Set_adddest(o)
-
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(reply)
-	}
-}
-
-func addladdr_handle(arg interface{}) {
-	var err error
-	var reply *govs.Vs_cmd_r
-
-	opt := arg.(*govs.CallOptions)
-	if err := govs.Parse_service(opt); err != nil {
-		fmt.Println(err)
-		return
-	}
-	o := &opt.Opt
-
-	reply, err = govs.Set_addladdr(o)
 
 	if err != nil {
 		fmt.Println(err)
@@ -336,27 +289,12 @@ func edit_handle(arg interface{}) {
 	}
 	o := &opt.Opt
 
-	reply, err = govs.Set_edit(o)
-
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(reply)
+	switch {
+	case govs.FirstCmd.EDIT:
+		reply, err = govs.Set_edit(o)
+	case govs.FirstCmd.EDITDEST:
+		reply, err = govs.Set_editdest(o)
 	}
-}
-
-func editsrv_handle(arg interface{}) {
-	var err error
-	var reply *govs.Vs_cmd_r
-
-	opt := arg.(*govs.CallOptions)
-	if err := govs.Parse_service(opt); err != nil {
-		fmt.Println(err)
-		return
-	}
-	o := &opt.Opt
-
-	reply, err = govs.Set_editdest(o)
 
 	if err != nil {
 		fmt.Println(err)
@@ -376,47 +314,14 @@ func del_handle(arg interface{}) {
 	}
 	o := &opt.Opt
 
-	reply, err = govs.Set_del(o)
-
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(reply)
+	switch {
+	case govs.FirstCmd.DEL:
+		reply, err = govs.Set_del(o)
+	case govs.FirstCmd.DELDEST:
+		reply, err = govs.Set_deldest(o)
+	case govs.FirstCmd.DELLADDR:
+		reply, err = govs.Set_delladdr(o)
 	}
-}
-
-func delsrv_handle(arg interface{}) {
-	var err error
-	var reply *govs.Vs_cmd_r
-
-	opt := arg.(*govs.CallOptions)
-	if err := govs.Parse_service(opt); err != nil {
-		fmt.Println(err)
-		return
-	}
-	o := &opt.Opt
-
-	reply, err = govs.Set_deldest(o)
-
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(reply)
-	}
-}
-
-func delladdr_handle(arg interface{}) {
-	var err error
-	var reply *govs.Vs_cmd_r
-
-	opt := arg.(*govs.CallOptions)
-	if err := govs.Parse_service(opt); err != nil {
-		fmt.Println(err)
-		return
-	}
-	o := &opt.Opt
-
-	reply, err = govs.Set_delladdr(o)
 
 	if err != nil {
 		fmt.Println(err)
@@ -474,4 +379,24 @@ func stats_handle(arg interface{}) {
 	default:
 		fmt.Println("govs stats -t io/worker/dev/ctl")
 	}
+}
+
+func Usage() {
+	program := os.Args[0]
+	fmt.Println(
+		"Usage:\n",
+		program, "-A|E -t|u service-address [-s scheduler] [-M netmask] [-flags service-flags]\n",
+		program, "-D -t|u service-address\n",
+		program, "-C\n",
+		program, "-a|e -t|u service-address -r server-address [-w weight] [-x upper-threshold] [-y lower-threshold] [-conn_flags conn-flags]\n",
+		program, "-d -t|u service-address -r server-address\n",
+		program, "-L|l [-t|u service-address]\n",
+		program, "-Z [-t|u service-address]\n",
+		program, "-P|Q -t|u service-address -z local-address\n",
+		program, "-G [-t|u service-address] \n",
+		program, "-TAG_SET [-set tcp/tcp_fin/udp]\n",
+		program, "-V\n",
+		program, "-s [-type stats-name] [-i id]\n",
+		program, "-h\n",
+	)
 }

@@ -7,6 +7,7 @@ package flags
 
 import (
 	"flag"
+	"fmt"
 	"os"
 )
 
@@ -92,6 +93,14 @@ func (f *flags_t) Parse(args []string) (err error) {
 	return
 }
 */
+
+func Usage() {
+	fmt.Printf("Commands:\n")
+	FirstCmd.PrintDefaults()
+	fmt.Printf("\n\nOptions:\n")
+	OthersCmd.PrintDefaults()
+}
+
 /*
 func (f *flag_t) Usage() {
 	fmt.Fprintf(os.Stderr,
