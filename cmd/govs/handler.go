@@ -9,6 +9,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/dpvs/govs"
@@ -16,9 +17,6 @@ import (
 )
 
 func init() {
-	//flags.CommandLine.Usage = fmt.Sprintf("Usage: %s COMMAND [OPTIONS] host[:port]\n\n",
-	//	os.Args[0])
-
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.ADD, "A", false, "add virtual service with options")
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.EDIT, "E", false, "edit virtual service with options")
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.DEL, "D", false, "delete virtual service")
@@ -40,60 +38,162 @@ func init() {
 	flags.OthersCmd.StringVar(&govs.CmdOpt.TCP, "t", "", "service-address is host[:port]")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.UDP, "u", "", "service-address is host[:port]")
 	flags.OthersCmd.Var(&govs.CmdOpt.Netmask, "M", "netmask deafult 0.0.0.0")
-	flags.OthersCmd.StringVar(&govs.CmdOpt.Sched_name, "s", "rr", "scheduler name rr/wrr")
+	flags.OthersCmd.StringVar(&govs.CmdOpt.Sched_name, "s", "", "scheduler name rr/wrr")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.Flags, "flags", 0, "the service flags")
 	flags.OthersCmd.Var(&govs.CmdOpt.Daddr, "r", "server-address is host (and port)")
-	flags.OthersCmd.IntVar(&govs.CmdOpt.Weight, "w", 0, "capacity of real server")
+	flags.OthersCmd.IntVar(&govs.CmdOpt.Weight, "w", -1, "capacity of real server")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.U_threshold, "x", 0, "upper threshold of connections")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.L_threshold, "y", 0, "lower threshold of connections")
 	flags.OthersCmd.Var(&govs.CmdOpt.Lip, "z", "local-address")
-	flags.OthersCmd.StringVar(&govs.CmdOpt.Typ, "type", "io", "type of the stats name(io/w/we/dev/ctl/mem)")
+	flags.OthersCmd.StringVar(&govs.CmdOpt.Typ, "type", "", "type of the stats name(io/w/we/dev/ctl/mem)")
 	flags.OthersCmd.IntVar(&govs.CmdOpt.Id, "i", -1, "id of the stats object")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.Timeout_s, "set", "", "set <tcp,tcp_fin,udp>")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.Conn_flags, "conn_flags", 0, "the conn flags")
 }
 
 func handler() {
+	if len(os.Args) < 2 {
+		flags.Cmd.Action = list_handle
+		flags.Cmd.Name = govs.CMD_LIST
+		return
+	}
 	flags.FirstCmd.Parse(os.Args[1:2])
 	switch {
 	case govs.FirstCmd.ADD:
 		flags.Cmd.Action = add_handle
+		flags.Cmd.Name = govs.CMD_ADD
 	case govs.FirstCmd.EDIT:
 		flags.Cmd.Action = edit_handle
+		flags.Cmd.Name = govs.CMD_EDIT
 	case govs.FirstCmd.DEL:
 		flags.Cmd.Action = del_handle
+		flags.Cmd.Name = govs.CMD_DEL
 	case govs.FirstCmd.ADDDEST:
 		flags.Cmd.Action = add_handle
+		flags.Cmd.Name = govs.CMD_ADDDEST
 	case govs.FirstCmd.EDITDEST:
 		flags.Cmd.Action = edit_handle
+		flags.Cmd.Name = govs.CMD_EDITDEST
 	case govs.FirstCmd.DELDEST:
 		flags.Cmd.Action = del_handle
+		flags.Cmd.Name = govs.CMD_DELDEST
 	case govs.FirstCmd.ADDLADDR:
 		flags.Cmd.Action = add_handle
+		flags.Cmd.Name = govs.CMD_ADDLADDR
 	case govs.FirstCmd.DELLADDR:
 		flags.Cmd.Action = del_handle
+		flags.Cmd.Name = govs.CMD_DELLADDR
 	case govs.FirstCmd.GETLADDR:
 		flags.Cmd.Action = list_handle
+		flags.Cmd.Name = govs.CMD_GETLADDR
 	case govs.FirstCmd.FLUSH:
 		flags.Cmd.Action = flush_handle
+		flags.Cmd.Name = govs.CMD_FLUSH
 	case govs.FirstCmd.LIST:
 		flags.Cmd.Action = list_handle
+		flags.Cmd.Name = govs.CMD_LIST
 	case govs.FirstCmd.STATUS:
 		flags.Cmd.Action = stats_handle
+		flags.Cmd.Name = govs.CMD_STATUS
 	case govs.FirstCmd.TIMEOUT:
 		flags.Cmd.Action = timeout_handle
+		flags.Cmd.Name = govs.CMD_TIMEOUT
 	case govs.FirstCmd.VERSION:
 		flags.Cmd.Action = version_handle
+		flags.Cmd.Name = govs.CMD_VERSION
 	case govs.FirstCmd.ZERO:
 		flags.Cmd.Action = zero_handle
+		flags.Cmd.Name = govs.CMD_ZERO
 	case govs.FirstCmd.USAGE:
 		Usage()
 		flags.Usage()
-	default:
-		fmt.Println("error!!")
+		return
 	}
 	flags.OthersCmd.Parse(os.Args[2:])
-	//generic_opt_check
+	CmdCheck()
+}
+
+func CmdCheck() {
+	var options uint
+	OptCheck(&options)
+	i := flags.Cmd.Name - 1
+	for j := 0; j < govs.NUMBER_OF_OPT; j++ {
+		if options&(1<<uint(j+1)) == 0 {
+			if govs.CMD_V_OPT[i][j] == '+' {
+				log.Fatalf("\nYou need to supply the '%s' option for the '%s' command\n\n", govs.OPTNAMES[j], govs.CMDNAMES[i])
+			}
+		} else {
+			if govs.CMD_V_OPT[i][j] == 'x' {
+				log.Fatalf("\nIllegal '%s' option with the '%s' command\n\n", govs.OPTNAMES[j], govs.CMDNAMES[i])
+			}
+		}
+	}
+
+}
+
+func OptCheck(options *uint) {
+	if govs.CmdOpt.TCP != "" || govs.CmdOpt.UDP != "" {
+		set_option(options, govs.OPT_SERVICE)
+	}
+
+	if govs.CmdOpt.Netmask != 0 {
+		set_option(options, govs.OPT_NETMASK)
+	}
+
+	if govs.CmdOpt.Sched_name == "" {
+		govs.CmdOpt.Sched_name = "rr"
+	} else {
+		set_option(options, govs.OPT_SCHEDULER)
+	}
+
+	if govs.CmdOpt.Flags != 0 {
+		set_option(options, govs.OPT_FLAGS)
+	}
+
+	if govs.CmdOpt.Daddr.Ip != govs.Be32(0) {
+		set_option(options, govs.OPT_REALSERVER)
+	}
+
+	if govs.CmdOpt.Weight == -1 {
+		govs.CmdOpt.Weight = 0
+	} else {
+		set_option(options, govs.OPT_WEIGHT)
+	}
+
+	if govs.CmdOpt.U_threshold != 0 {
+		set_option(options, govs.OPT_UTHRESHOLD)
+	}
+
+	if govs.CmdOpt.L_threshold != 0 {
+		set_option(options, govs.OPT_LTHRESHOLD)
+	}
+
+	if govs.CmdOpt.Lip != 0 {
+		set_option(options, govs.OPT_LADDR)
+	}
+
+	if govs.CmdOpt.Typ == "" {
+		govs.CmdOpt.Typ = "io"
+	} else {
+		set_option(options, govs.OPT_TYPE)
+	}
+
+	if govs.CmdOpt.Id != -1 {
+		set_option(options, govs.OPT_ID)
+	}
+
+	if govs.CmdOpt.Timeout_s != "" {
+		set_option(options, govs.OPT_TIMEOUT)
+	}
+
+	if govs.CmdOpt.Conn_flags != 0 {
+		set_option(options, govs.OPT_CONNFLAGS)
+	}
+
+}
+
+func set_option(options *uint, option uint) {
+	*options |= (1 << option)
 }
 
 func version_handle(arg interface{}) {
