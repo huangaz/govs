@@ -338,19 +338,17 @@ func (r Vs_stats_mem_r) String() string {
 	if r.Code != 0 {
 		return fmt.Sprintf("%s:%s", Ecode(r.Code), r.Msg)
 	}
-	ret := fmt.Sprintf("%-10s %10s %10s %10s %10s %10s\n",
+	ret := fmt.Sprintf("%-3s %20s %20s %20s %20s %20s (used/total)\n",
 		"id", "mbuf", "svc", "rs", "laddr", "conn")
-	ret += fmt.Sprintf("%-10s %10d %10d %10d %10d %10d\n\n",
-		"max", r.Size.Mbuf, r.Size.Svc, r.Size.Rs, r.Size.Laddr, r.Size.Conn)
 	for _, e := range r.Available {
-		ret += fmt.Sprintf("%-10d %10d %10d %10d %10d %10d\n",
+		ret += fmt.Sprintf("%-3d %20s %20s %20s %20s %20s\n",
 			e.Socket_id,
-			r.Size.Mbuf-e.Mbuf,
-			r.Size.Svc-e.Svc,
-			r.Size.Rs-e.Rs,
-			r.Size.Laddr-e.Laddr,
-			r.Size.Conn-e.Conn)
-
+			fmt.Sprintf("%d/%d", r.Size.Mbuf-e.Mbuf, r.Size.Mbuf),
+			fmt.Sprintf("%d/%d", r.Size.Svc-e.Svc, r.Size.Svc),
+			fmt.Sprintf("%d/%d", r.Size.Rs-e.Rs, r.Size.Rs),
+			fmt.Sprintf("%d/%d", r.Size.Laddr-e.Laddr, r.Size.Laddr),
+			fmt.Sprintf("%d/%d", r.Size.Conn-e.Conn, r.Size.Conn),
+		)
 	}
 	return ret
 }
