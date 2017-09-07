@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"os/user"
 
+	"github.com/dpvs/govs"
 	"github.com/yubo/gotool/flags"
-	"github.com/yubo/govs"
 )
 
 var (

@@ -14,7 +14,7 @@ cd ${VS}
 rm -rf ${VD}
 mkdir ${VD}
 govendor add +external
-cd ${VD}/github.com/yubo
+cd ${VD}/github.com/dpvs
 rm -rf govs
 ln -s ../../../.. govs
 cd ${OD}
