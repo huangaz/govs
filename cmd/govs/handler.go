@@ -34,6 +34,7 @@ func init() {
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.DELLADDR, "Q", false, "del local address")
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.GETLADDR, "G", false, "get local address")
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.STATUS, "s", false, "get dpvs status")
+	flags.FirstCmd.BoolVar(&govs.FirstCmd.AGENT, "agent", false, "get agent information")
 
 	flags.OthersCmd.StringVar(&govs.CmdOpt.TCP, "t", "", "service-address is host[:port]")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.UDP, "u", "", "service-address is host[:port]")
@@ -104,6 +105,9 @@ func handler() {
 	case govs.FirstCmd.ZERO:
 		flags.Cmd.Action = zero_handle
 		flags.Cmd.Name = govs.CMD_ZERO
+	case govs.FirstCmd.AGENT:
+		flags.Cmd.Action = agent_handle
+		flags.Cmd.Name = govs.CMD_AGENT
 	default:
 		Usage()
 		flags.Usage()
@@ -499,4 +503,77 @@ func Usage() {
 		program, "-s [-type stats-name] [-i id]\n",
 		program, "-h\n",
 	)
+}
+
+type port struct {
+	tx_pkts      int64
+	tx_pkts_drop int64
+	rx_pkts      int64
+}
+
+func agent_handle(arg interface{}) {
+	id := govs.CmdOpt.Id
+	var ret string
+	relay_io, err := govs.Get_stats_io(id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if relay_io.Code != 0 {
+		fmt.Printf("%s:%s", govs.Ecode(relay_io.Code), relay_io.Msg)
+		return
+	}
+
+	var rx_ring_pkts_drop int64
+	tx_port_map := make(map[int32]*port)
+	for _, e := range relay_io.Io {
+		for i, _ := range e.Tx_nic_ports_iters {
+			port_id := e.Tx_nic_ports_port[i]
+			if _, ok := tx_port_map[port_id]; ok {
+				tx_port_map[port_id].tx_pkts += e.Tx_nic_ports_pkts[i]
+				tx_port_map[port_id].tx_pkts_drop += e.Tx_nic_ports_drop_pkts[i]
+			} else {
+				var newport = new(port)
+				newport.tx_pkts = e.Tx_nic_ports_pkts[i]
+				newport.tx_pkts_drop = e.Tx_nic_ports_drop_pkts[i]
+				tx_port_map[port_id] = newport
+			}
+		}
+		for i, _ := range e.Rx_nic_queues_iters {
+			port_id := e.Rx_nic_queues_port[i]
+			if _, ok := tx_port_map[port_id]; ok {
+				tx_port_map[port_id].rx_pkts += e.Rx_nic_queues_pkts[i]
+			} else {
+				var newport = new(port)
+				newport.rx_pkts = e.Rx_nic_queues_pkts[i]
+				tx_port_map[port_id] = newport
+			}
+		}
+		for i, _ := range e.Rx_rings_iters {
+			rx_ring_pkts_drop += e.Rx_rings_drop_pkts[i]
+		}
+	}
+	ret += fmt.Sprintf("\nIO:\n")
+	for port, val := range tx_port_map {
+		ret += fmt.Sprintf("\n%s %d\n %-15s %10d %-15s %10d %-15s %10d\n",
+			"Port", port, "tx_pkts:", val.tx_pkts, "tx_drop_pkts:", val.tx_pkts_drop, "rx_pkts:", val.rx_pkts)
+	}
+	ret += fmt.Sprintf("\n%-20s %10d\n", "rx_ring_pkts_drop:", rx_ring_pkts_drop)
+
+	ret += fmt.Sprintf("\nDEV:\n")
+	relay_dev, err := govs.Get_stats_dev(id)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	if relay_dev.Code != 0 {
+		fmt.Printf("%s:%s", govs.Ecode(relay_io.Code), relay_io.Msg)
+		return
+	}
+	for _, e := range relay_dev.Dev {
+		ret += fmt.Sprintf("\n%s %d\n %-15s %10d %-15s %10d %-15s %10d\n %-15s %10d %-15s %10d\n",
+			"Port", e.Port_id, "RX pkts:", e.Ipackets, "errors:", e.Ierrors, "dropped:",
+			e.Imissed, "TX pkts:", e.Opackets, "errors:", e.Oerrors)
+	}
+	fmt.Println(ret)
 }
