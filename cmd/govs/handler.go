@@ -104,7 +104,7 @@ func handler() {
 	case govs.FirstCmd.ZERO:
 		flags.Cmd.Action = zero_handle
 		flags.Cmd.Name = govs.CMD_ZERO
-	case govs.FirstCmd.USAGE:
+	default:
 		Usage()
 		flags.Usage()
 		return
