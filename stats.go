@@ -79,9 +79,9 @@ func (r Vs_stats_io_r) String() string {
 				fmt.Sprintf("rx_ring_worker%02d", i),
 				"iters", e.Rx_rings_iters[i],
 				"packets", e.Rx_rings_pkts[i],
-				"drop iters", e.Rx_rings_drop_iters[i],
-				"drop pkts", e.Rx_rings_drop_pkts[i],
-				"drop cnt", float64(e.Rx_rings_drop_count[i])/float64(e.Rx_rings_drop_iters[i]),
+				"drop_iters", e.Rx_rings_drop_iters[i],
+				"drop_pkts", e.Rx_rings_drop_pkts[i],
+				"drop_cnt", float64(e.Rx_rings_drop_count[i])/float64(e.Rx_rings_drop_iters[i]),
 			)
 		}
 
@@ -90,8 +90,8 @@ func (r Vs_stats_io_r) String() string {
 				fmt.Sprintf("tx_nic_port%d", e.Tx_nic_ports_port[i]),
 				"iters", e.Tx_nic_ports_iters[i],
 				"packets", e.Tx_nic_ports_pkts[i],
-				"drop iters", e.Tx_nic_ports_drop_iters[i],
-				"drop pkts", e.Tx_nic_ports_drop_pkts[i],
+				"drop_iters", e.Tx_nic_ports_drop_iters[i],
+				"drop_pkts", e.Tx_nic_ports_drop_pkts[i],
 			)
 		}
 
@@ -141,13 +141,13 @@ func (r Vs_stats_worker_r) String() string {
 
 	for _, e := range r.Worker {
 		ret += fmt.Sprintf("%-32s %-10s %10d %-10s %10d\n",
-			"", "Core_id", e.Core_id, "conns", e.Conns)
+			"", "core_id", e.Core_id, "conns", e.Conns)
 
 		ret += fmt.Sprintf("%-32s %-10s %10d %-10s %10d\n",
-			"In", "packets", e.Inpkts, "bytes", e.Inbytes)
+			"in", "packets", e.Inpkts, "bytes", e.Inbytes)
 
 		ret += fmt.Sprintf("%-32s %-10s %10d %-10s %10d\n",
-			"Out", "packets", e.Outpkts, "bytes", e.Outbytes)
+			"out", "packets", e.Outpkts, "bytes", e.Outbytes)
 
 		for i, _ := range e.Rings_in_iters {
 			ret += fmt.Sprintf("%-32s %-10s %10d %-10s %10d %-10s %10d %-10s %10d %-10s %10f\n",
@@ -165,8 +165,8 @@ func (r Vs_stats_worker_r) String() string {
 				fmt.Sprintf("rings_out_port%02d", e.Rings_out_port[i]),
 				"iters", e.Rings_out_iters[i],
 				"packets", e.Rings_out_pkts[i],
-				"drop iters", e.Rings_out_drop_iters[i],
-				"drop pkts", e.Rings_out_drop_pkts[i],
+				"drop_iters", e.Rings_out_drop_iters[i],
+				"drop_pkts", e.Rings_out_drop_pkts[i],
 			)
 		}
 		ret += "\n"

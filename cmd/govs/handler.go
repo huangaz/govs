@@ -330,7 +330,7 @@ func stats_handle(arg interface{}) {
 			fmt.Println(err)
 			return
 		}
-		fmt.Printf("%+v\n", relay)
+		fmt.Printf(relay)
 	case "w":
 		relay, err := govs.Get_stats_worker(id)
 		if err != nil {
