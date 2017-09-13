@@ -34,7 +34,6 @@ func init() {
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.DELLADDR, "Q", false, "del local address")
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.GETLADDR, "G", false, "get local address")
 	flags.FirstCmd.BoolVar(&govs.FirstCmd.STATUS, "s", false, "get dpvs status")
-	flags.FirstCmd.BoolVar(&govs.FirstCmd.AGENT, "agent", false, "get information for agent")
 
 	flags.OthersCmd.StringVar(&govs.CmdOpt.TCP, "t", "", "service-address is host[:port]")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.UDP, "u", "", "service-address is host[:port]")
@@ -46,7 +45,7 @@ func init() {
 	flags.OthersCmd.UintVar(&govs.CmdOpt.U_threshold, "x", 0, "upper threshold of connections")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.L_threshold, "y", 0, "lower threshold of connections")
 	flags.OthersCmd.Var(&govs.CmdOpt.Lip, "z", "local-address")
-	flags.OthersCmd.StringVar(&govs.CmdOpt.Typ, "type", "", "type of the stats name(io/w/we/dev/ctl/mem)")
+	flags.OthersCmd.StringVar(&govs.CmdOpt.Typ, "type", "", "type of the stats name(io/w/we/dev/ctl/mem/falcon)")
 	flags.OthersCmd.IntVar(&govs.CmdOpt.Id, "i", -1, "id of the stats object")
 	flags.OthersCmd.StringVar(&govs.CmdOpt.Timeout_s, "set", "", "set <tcp,tcp_fin,udp>")
 	flags.OthersCmd.UintVar(&govs.CmdOpt.Conn_flags, "conn_flags", 0, "the conn flags")
@@ -105,9 +104,6 @@ func handler() {
 	case govs.FirstCmd.ZERO:
 		flags.Cmd.Action = zero_handle
 		flags.Cmd.Name = govs.CMD_ZERO
-	case govs.FirstCmd.AGENT:
-		flags.Cmd.Action = agent_handle
-		flags.Cmd.Name = govs.CMD_AGENT
 	default:
 		Usage()
 		flags.Usage()
@@ -480,6 +476,8 @@ func stats_handle(arg interface{}) {
 			return
 		}
 		fmt.Println(relay)
+	case "falcon":
+		falcon_handle(id)
 	default:
 		fmt.Println("govs stats -t io/worker/dev/ctl")
 	}
@@ -502,12 +500,10 @@ func Usage() {
 		program, "-V\n",
 		program, "-s [-type stats-name] [-i id]\n",
 		program, "-h\n",
-		program, "-agent\n",
 	)
 }
 
-func agent_handle(arg interface{}) {
-	id := govs.CmdOpt.Id
+func falcon_handle(id int) {
 	var ret string
 	var rx_ring_pkts_drop int64
 
@@ -546,8 +542,6 @@ func agent_handle(arg interface{}) {
 		ret += fmt.Sprintf("net.if.out.packets %d iface=port%d\n", e.Opackets, e.Port_id)
 		ret += fmt.Sprintf("net.if.out.bytes %d iface=port%d\n", e.Obytes, e.Port_id)
 		ret += fmt.Sprintf("net.if.out.errors %d iface=port%d\n", e.Oerrors, e.Port_id)
-
 	}
-
 	fmt.Println(ret)
 }

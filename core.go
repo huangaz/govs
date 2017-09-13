@@ -117,7 +117,6 @@ type FirstCommand struct {
 	GETLADDR bool
 	TIMEOUT  bool
 	STATUS   bool
-	AGENT    bool
 }
 
 const (
@@ -137,7 +136,6 @@ const (
 	CMD_GETLADDR
 	CMD_TIMEOUT
 	CMD_STATUS
-	CMD_AGENT
 	CMD_LAST
 )
 
@@ -179,7 +177,6 @@ var CMDNAMES = [NUMBER_OF_CMD]string{
 	"get-localaddr",
 	"timeout",
 	"status",
-	"agent",
 }
 
 var OPTNAMES = [NUMBER_OF_OPT]string{
@@ -223,7 +220,6 @@ var CMD_V_OPT = [NUMBER_OF_CMD][NUMBER_OF_OPT]byte{
 	/*GETLADDR*/ {' ', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'},
 	/*TIMEOUT */ {'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', ' ', 'x'},
 	/*STATUS  */ {'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', ' ', 'x', 'x', 'x'},
-	/*AGENT   */ {'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'},
 }
 
 type Be32 uint32
